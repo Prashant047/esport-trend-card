@@ -1,113 +1,166 @@
-import Image from 'next/image'
+"use client"
+import { useMeasure } from '@uidotdev/usehooks';
+import { motion } from 'framer-motion';
+import { ReactNode, useState } from 'react';
+import * as d3 from 'd3';
+
+import cardData from './data';
+
+
+const data = cardData.map((val) => val.percent);
+const placementData = [{x1: 0, x2:0, id:0}]
+data.forEach((val,i) => {
+  let prev = placementData[placementData.length-1]
+  placementData.push({x1: prev.x2, x2: prev.x2 + val, id:cardData[i].id});
+});
+placementData.shift();
+console.log(placementData);
+
 
 export default function Home() {
+  const [ref, {height, width}] = useMeasure();
+  const [active, setActive] = useState(0);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <section className='max-w-sm p-6 mx-auto my-10 bg-amber-200 rounded-[1.5rem]'>
+      <h1 className='text-neutral-950'>
+        <b>Esport Games Trends</b>
+      </h1>
+      <div className='flex justify-between mb-6 text-neutral-800/70'>
+        <small>
+          by Prize Pool
+        </small>
+        <small>
+          2022
+        </small>
+      </div>
+      <div
+        ref={ref}
+        className='h-64 bg-amber-200 mb-6'
+      >
+        {(height&&width?(
+          <Graph active={active} height={height} width={width}/>
+        ):null)}
+      </div>
+      <div>
+        <ul className='text-neutral-950'>
+          {cardData.map(({percent, prizePool, game, icon, id}) => (
+            <ListItem
+              onMouseEnter={() => setActive(id)}
+              onMouseLeave={() => setActive(0)}
+              percent={percent}
+              key={id}
+              game={(
+                <span className='flex items-center gap-2'>
+                  <span>{icon}</span>
+                  <b>{game}</b>
+                </span>
+              )}
+              prizePool={prizePool}
             />
-          </a>
-        </div>
+          ))}
+        </ul>
       </div>
+    </section>
+  );
+}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+interface ListItem {
+  percent: number
+  game: ReactNode
+  prizePool: number
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+}
+function ListItem({percent, game, prizePool, onMouseEnter, onMouseLeave}:ListItem){
+  const numberFormatter = Intl.NumberFormat('en');
+  return (
+    <li onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} className='grid grid-cols-[2fr_4fr_3fr] text-sm py-3 border-b-2 border-neutral-800/20 last:border-b-0'>
+      <b>{percent}%</b>
+      <span>{game}</span>
+      <span className='justify-self-end'>${numberFormatter.format(prizePool)}</span>
+    </li>
+  )
+}
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+function Graph({height, width, active}: {height:number, width: number, active:number}){
+  const PADDING = 0;
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+  const xScale = d3.scaleLinear()
+    .domain([0,100])
+    .range([PADDING, width-PADDING])
+  
+  const yScale = d3.scaleLinear()
+    .domain([0, Math.max(...data)])
+    .range([height-PADDING, PADDING]);
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+  if (!height || !width) {
+    return null;
+  }
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+  return (
+    <svg height={height} width={width} >
+      {placementData.map(({x1: start, x2: end, id}, i) => (
+        <motion.g key={id} animate={{opacity:!active?1:active===id?1:0.5}}>
+          <motion.g 
+            className='text-neutral-900' 
+            initial={{x: xScale(start), y:yScale(0), opacity: 0}}
+            animate={{x: xScale(start), y:yScale(data[i]), opacity: 1}}
+            transition={{
+              delay: 0.15*i + 0.5,
+              ease: [0.32, 0.72, 0, 1],
+              duration: 1
+            }}
+          >
+            <rect 
+              fill='currentColor'
+              x={0}
+              y={0}
+              height={20}
+              width={4}
+            />
+            <text
+              fill='currentColor'
+              x={24}
+              y={14}
+              textAnchor='middle'
+              className='font-bold text-[0.8rem]'
+            >{data[i]}%</text>
+          </motion.g>
+          <motion.line 
+            stroke='currentColor' 
+            initial={{y1: yScale(0)}}
+            animate={{y1: yScale(data[i])}}
+            transition={{
+              delay: 0.1*i + 0.5,
+              ease:[0.32, 0.72, 0, 1],
+              duration: 1
+            }}
+            strokeWidth={1.6}
+            className='text-neutral-600'
+            opacity={0.5}
+            x1={xScale(start)} 
+            x2={xScale(start)} 
+            y2={yScale(0)} 
+            fill='none'
+          />
+          <motion.rect 
+            initial={{width: 0}}
+            animate={{width:xScale(end) - xScale(start) }}
+            transition={{
+              ease:[0.32, 0.72, 0, 1],
+              duration: 1
+            }}
+            whileTap={{scale: 0.95}}
+            fill='currentColor'
+            className='text-neutral-950'
+            style={{opacity: 1 - 0.1*i}}
+            x={xScale(start)}
+            y={yScale(7)}
+            height={height - PADDING - yScale(7)}
+          />
+        </motion.g>
+      ))}
+    </svg>
   )
 }
