@@ -22,46 +22,53 @@ export default function Home() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className='max-w-sm p-6 mx-auto my-10 bg-amber-200 rounded-[1.5rem]'>
-      <h1 className='text-neutral-950'>
-        <b>Esport Games Trends</b>
-      </h1>
-      <div className='flex justify-between mb-6 text-neutral-800/70'>
-        <small>
-          by Prize Pool
-        </small>
-        <small>
-          2022
-        </small>
-      </div>
-      <div
-        ref={ref}
-        className='h-64 bg-amber-200 mb-6'
-      >
-        {(height&&width?(
-          <Graph active={active} height={height} width={width}/>
-        ):null)}
-      </div>
-      <div>
-        <ul className='text-neutral-950'>
-          {cardData.map(({percent, prizePool, game, icon, id}) => (
-            <ListItem
-              onMouseEnter={() => setActive(id)}
-              onMouseLeave={() => setActive(0)}
-              percent={percent}
-              key={id}
-              game={(
-                <span className='flex items-center gap-2'>
-                  <span>{icon}</span>
-                  <b>{game}</b>
-                </span>
-              )}
-              prizePool={prizePool}
-            />
-          ))}
-        </ul>
-      </div>
-    </section>
+    <>
+      <section className='max-w-sm p-6 mx-auto my-10 bg-amber-200 rounded-[1.5rem]'>
+        <h1 className='text-neutral-950'>
+          <b>Esport Games Trends</b>
+        </h1>
+        <div className='flex justify-between mb-6 text-neutral-800/70'>
+          <small>
+            by Prize Pool
+          </small>
+          <small>
+            2022
+          </small>
+        </div>
+        <div
+          ref={ref}
+          className='h-64 bg-amber-200 mb-6'
+        >
+          {(height&&width?(
+            <Graph active={active} height={height} width={width}/>
+          ):null)}
+        </div>
+        <div>
+          <ul className='text-neutral-950'>
+            {cardData.map(({percent, prizePool, game, icon, id}) => (
+              <ListItem
+                onMouseEnter={() => setActive(id)}
+                onMouseLeave={() => setActive(0)}
+                percent={percent}
+                key={id}
+                game={(
+                  <span className='flex items-center gap-2'>
+                    <span>{icon}</span>
+                    <b>{game}</b>
+                  </span>
+                )}
+                prizePool={prizePool}
+              />
+            ))}
+          </ul>
+        </div>
+      </section>
+      <p className='text-center text-neutral-500'>
+        original design - <a className='underline'  href="https://dribbble.com/shots/22793680-Esport-Analytics-Website">
+          https://dribbble.com/shots/22793680-Esport-Analytics-Website 
+        </a>
+      </p>
+    </>
   );
 }
 
